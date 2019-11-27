@@ -1,0 +1,12 @@
+function gaussfft(pic,t)
+    gauss = zeros(size(pic));
+    s = size(pic,1);
+    [x,y] = meshgrid(1:s,1:1);
+    %for i = 1:size(pic,1)
+    %    for j = 1:size(pic,2)
+    %        gauss(i,j) = exp(-((i-c)^2+(j-c)^2)/(2*t));
+    %    end
+    %end
+    surf(gauss)
+end
+
