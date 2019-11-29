@@ -27,14 +27,25 @@ def ass():
 
 
 def main():
-    ass()
-    exit()
+    #ass()
+    #exit()
     K = 100000
     T = 100
     epsilon = 0.01
 
-    #Q_star, V_hist = Qlearning(K, T, 0.8)
-    Q_star, V_hist = SARSA(K, T, 0.8, epsilon)
+    V_hist = np.load(f'sarsa_{K}_{T}_{epsilon}.npy')
+    plt.figure(figsize=(8,3.5))
+    plt.plot(V_hist)
+    plt.title("Q-learning convergence (T=100)")
+    plt.ylabel("V[s0]")
+    plt.xlabel("Episodes")
+    plt.tight_layout()
+    plt.savefig('q_conv')
+    plt.show()
+    plt.exit()
+
+    Q_star, V_hist = Qlearning(K, T, 0.8)
+    #Q_star, V_hist = SARSA(K, T, 0.8, epsilon)
 
     np.save(f'sarsa_{K}_{T}_{epsilon}', V_hist)
     plt.plot(V_hist)

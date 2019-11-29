@@ -42,9 +42,16 @@ maze_cells = maze.size
 # All possible positions (for the minotaur).
 positions = np.array([[row, col] for row in range(7) for col in range(8)])
 # All possible player actions.
+
 actions = [[-1,0], [1,0], [0,-1], [0, 1], [0,0]]
 # All possible minotaur actions.
-actions_mino = [[-1,0], [1,0], [0,-1], [0, 1]]
+MINO_STAND_STILL = True
+if MINO_STAND_STILL:
+    actions_mino = [[-1,0], [1,0], [0,-1], [0, 1], [0,0]]
+    mino_valid_moves += 1
+else:
+    actions_mino = [[-1,0], [1,0], [0,-1], [0, 1]]
+
 
 def main():
     global maze_dist
@@ -69,11 +76,8 @@ def main():
         s0 = encode_state([0, 0], [goal[0], goal[1]])
         s_goal = encode_state([goal[0], goal[1]], [goal[0], goal[1]])
 
-        print(f'Probability = {V[s_goal]}')
-        y = [V[s_goal,t] for t in range(21)]
-        #plt.plot(y)
-        #plt.show()
-        #exit()
+        print(f'Probability = {V[s0]}')
+        y = [V[s0,t] for t in range(21)]
 
         pi = np.load('policy.npy')
         pp, mp = simulate(pi)
@@ -109,6 +113,7 @@ def calc_prob():
     n_states = maze.size * maze.size + 1
     p = np.zeros((n_states, 5, n_states))
     r = np.zeros((n_states, 5))
+    #r = -np.ones((n_states, 5)) # Change here if time-critical
 
     for p_pos in positions: # player
         if cv(p_pos[0], p_pos[1]):
@@ -131,7 +136,7 @@ def calc_prob():
                         continue
 
                     if np.array_equal(p_newpos, m_newpos):
-                        p[cur_s, a, -1] = mino_prob
+                        p[cur_s, a, -1] = mino_prob # Kill player
                     else:
                         next_s = encode_state(p_newpos, m_newpos)
                         p[cur_s, a, next_s] = mino_prob
@@ -154,6 +159,7 @@ def calc_prob():
 
     # Terminal state only leads to terminal state.
     p[-1, :, -1] = 1
+    r[-1,:] = 0 # Change here if time-critical
 
     return p, r
 
@@ -259,6 +265,8 @@ def animate(pathP, pathM):
     won  = False
     dead = False
 
+    print(pathP)
+
     plt.ion()
     for i in range(len(pathP)):
         # Reset previous positions
@@ -268,15 +276,16 @@ def animate(pathP, pathM):
             grid.get_celld()[pathM[i-1]].set_facecolor(col_map[maze[pathM[i-1]]])
             grid.get_celld()[pathM[i-1]].get_text().set_text('')
 
+        # Check for victory
+        if i > 0 and pathP[i-1] == (6,5):
+           won = True
+           grid.get_celld()[(6,5)].set_facecolor(LIGHT_GREEN)
+           grid.get_celld()[(6,5)].get_text().set_text('Win')
+           
         # Animate player
         if not won:
             grid.get_celld()[pathP[i]].set_facecolor(LIGHT_ORANGE)
             grid.get_celld()[pathP[i]].get_text().set_text('Player')
-        # Check for victory
-        if i > 0 and pathP[i-1] == (6,5):
-            won = True
-            grid.get_celld()[(6,5)].set_facecolor(LIGHT_GREEN)
-            grid.get_celld()[(6,5)].get_text().set_text('Win')
 
         # Animate minotaur
         grid.get_celld()[pathM[i]].set_facecolor(LIGHT_BLUE)
@@ -290,7 +299,8 @@ def animate(pathP, pathM):
             plt.show()
             break
         plt.show()
-        plt.pause(0.1)
+        plt.pause(0.2)
+        plt.savefig(f'fig{i}')
 
     if not dead:
         plt.pause(3)
