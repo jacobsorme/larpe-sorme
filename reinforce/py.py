@@ -35,32 +35,40 @@ def plot_value_fun():
 
 
 def main():
-    #ass()
-    #exit()
+    # If True (1), plot V[s0] for different lambdas.
+    PLOT_DIFFERENT_LAMBDAS = 0
+    # .. otherwise, use lambda below and simulate game.
+    LAMBDA = 0.7
 
-    # V_hist = np.load(f'sarsa_{K}_{T}_{epsilon}.npy')
-    # plt.figure(figsize=(8,3.5))
-    # plt.plot(V_hist)
-    # plt.title("Q-learning convergence (T=100)")
-    # plt.ylabel("V[s0]")
-    # plt.xlabel("Episodes")
-    # plt.tight_layout()
-    # plt.savefig('q_conv')
-    # plt.show()
-    # plt.exit()
+    lambdas =  [0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99]
+    lambdas = np.linspace(0.01, 0.99, 100)
+    V0_last = []
 
     p, r = calc_prob()
-    gamma = 0.99
-    epsilon = 0.0000001
-    N = 200
-    V, policy, V0_hist = value_iteration(p, r, gamma, epsilon, N)
+    epsilon = 0.00000001
+    N = 500
+    for l in lambdas:
+        lamb = l if PLOT_DIFFERENT_LAMBDAS else LAMBDA
+        V, policy, V0_hist = value_iteration(p, r, lamb, epsilon, N)
+        V0_last.append(V0_hist[-1])
 
-    plt.plot(V0_hist)
-    plt.show()
-    
-    T = 100
-    hist, reward = simulate(p, r, policy, T)
-    animate(hist)
+        if not PLOT_DIFFERENT_LAMBDAS:
+            break
+
+    if PLOT_DIFFERENT_LAMBDAS:
+        plt.figure(figsize=(8, 3.5))
+        plt.plot(lambdas, V0_last)
+        plt.title("Initial state value for different discount rates")
+        plt.xlabel("Discount Rate (lambda)")
+        plt.ylabel("V[s0]")
+        plt.xticks(np.linspace(0, 1, 11))
+        plt.tight_layout()
+        #plt.savefig("different_lambdas")
+        plt.show()
+    else:
+        T = 100
+        hist, reward = simulate(p, r, policy, T)
+        animate(hist)
 
 def create_policy(Q):
     return np.argmax(Q, axis=1) # Return S x 1 vector.
@@ -104,7 +112,7 @@ def calc_prob():
                 new_pos = c_pos + a
                 if cv(new_pos):
                     continue
-                
+
                 if same_y:
                     if abs(new_pos[1] - p_pos[1]) > dydx[1]:
                         continue
@@ -113,7 +121,7 @@ def calc_prob():
                         continue
                 elif np.sum(np.abs(new_pos - p_pos)) > manhattan_d:
                     continue
-                
+
                 valid_actions.append(a)
             cop_prob = 1 / len(valid_actions)
 
@@ -154,7 +162,7 @@ def value_iteration(p, r, gamma, epsilon, N):
                 Q[s, a] = r[s, a] + gamma*np.dot(p[s,a], V)
         best_V = np.max(Q, 1)
         # Show error
-        print(np.linalg.norm(V - best_V))
+        #print(np.linalg.norm(V - best_V))
         V0_hist[n-1] = best_V[init_s]
 
     # Compute policy
