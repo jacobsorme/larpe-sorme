@@ -9,13 +9,13 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.models import Sequential
 
-EPISODES = 100 #Maximum number of episodes
+EPISODES = 1000 #Maximum number of episodes
 
 #DQN Agent for the Cartpole
 #Q function approximation with NN, experience replay, and target network
 class DQNAgent:
     #Constructor for the agent (invoked when DQN is first called in main)
-    def __init__(self, state_size, action_size, lamb=0.95, lr=0.005, mem_sz=1000, freq=1, layers=1, units=16):
+    def __init__(self, state_size, action_size, lamb, learn, buffer, freq, units, layers): # lamb=0.95, lr=0.005, mem_sz=1000, freq=1, layers=1, units=16):
         self.check_solve = False	#If True, stop if you satisfy solution confition
         self.render = False        #If you want to see Cartpole learning, then change to True
 
@@ -27,10 +27,10 @@ class DQNAgent:
 
         #Set hyper parameters for the DQN. Do not adjust those labeled as Fixed.
         self.lamb = lamb #0.95
-        self.learning_rate = lr #0.005
+        self.learning_rate = learn #0.005
         self.epsilon = 0.02 #Fixed
         self.batch_size = 32 #Fixed
-        self.memory_size = mem_sz # 1000
+        self.memory_size = buffer # 1000
         self.train_start = 1000 #Fixed
         self.target_update_frequency = freq # 1
 
@@ -143,7 +143,7 @@ class DQNAgent:
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
         #pylab.savefig("scores.png")
-        pylab.show()
+        #pylab.show()
 
 ###############################################################################
 ###############################################################################
@@ -151,19 +151,17 @@ class DQNAgent:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l',default=1, type=int)
-    parser.add_argument('-u', default=16, type=int)
-    parser.add_argument('-df', default=0.95, type=float)
-    parser.add_argument('-f', default=1, type=int)
-    parser.add_argument('-lr', default=0.005, type=float)
-    parser.add_argument('-b', default=1000, type=int)
+    parser.add_argument('--layers',default=1, type=int)
+    parser.add_argument('--units', default=16, type=int)
+    parser.add_argument('--lamb', default=0.95, type=float)
+    parser.add_argument('--freq', default=1, type=int)
+    parser.add_argument('--learn', default=0.005, type=float)
+    parser.add_argument('--buffer', default=1000, type=int)
     parser.add_argument('--file', type=str, required=True)
-    args = parser.parse_args()
-    for a in list(args):
-        print(a)
-
-    exit()
-
+    args = vars(parser.parse_args())
+    arg = args['file'] # The argument we want to use for file name ...
+    result_filename = f'{arg}_{args[arg]}'
+    del args['file'] # Remve the file argument, not needed no more
 
     #For CartPole-v0, maximum episode length is 200
     env = gym.make('CartPole-v0') #Generate Cartpole-v0 environment object from the gym library
@@ -173,7 +171,7 @@ if __name__ == "__main__":
 
 
     #Create agent, see the DQNAgent __init__ method for details
-    agent = DQNAgent(state_size, action_size, args.df, args.lr, args.b, args.f, args.l, args.u)
+    agent = DQNAgent(state_size, action_size, **args)
 
     #Collect test states for plotting Q values using uniform random policy
     test_states = np.zeros((agent.test_state_no, state_size))
@@ -241,4 +239,4 @@ if __name__ == "__main__":
                         agent.plot_data(episodes,scores,max_q_mean[:e+1])
                         sys.exit()
     agent.plot_data(episodes,scores,max_q_mean)
-    np.save(f'{args.file}',np.array([max_q_mean, np.array(scores)]))
+    np.save(f'dat/{result_filename}',np.array([max_q_mean, np.array(scores)]))
