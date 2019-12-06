@@ -192,7 +192,7 @@ if __name__ == "__main__":
             test_states[i] = state
             state = next_state
 
-    scores, episodes = [], [] #Create dynamically growing score and episode counters
+    last100mean, scores, episodes = [], [], [] #Create dynamically growing score and episode counters
     for e in range(EPISODES):
         done = False
         score = 0
@@ -226,17 +226,16 @@ if __name__ == "__main__":
                 #Plot the play time for every episode
                 scores.append(score)
                 episodes.append(e)
-
-                last100mean = np.mean(scores[-min(100, len(scores)):])
-                print("  > episode:", e, "mean:", last100mean, "  score:", score,"\tq_value:", max_q_mean[e],"\tmemory length:",
+                last100mean.append(np.mean(scores[-min(100, len(scores)):]))
+                print("  > episode:", e, "mean:", last100mean[e], "  score:", score,"\tq_value:", max_q_mean[e],"\tmemory length:",
                       len(agent.memory))
 
                 # if the mean of scores of last 100 episodes is bigger than 195
                 # stop training
                 if agent.check_solve:
-                    if last100mean >= 195:
+                    if last100mean[e] >= 195:
                         print("solved after", e-100, "episodes")
                         agent.plot_data(episodes,scores,max_q_mean[:e+1])
                         sys.exit()
     agent.plot_data(episodes,scores,max_q_mean)
-    np.save(f'dat/{result_filename}',np.array([max_q_mean, np.array(scores)]))
+    np.save(f'dat/{result_filename}',np.array([max_q_mean, np.array(scores), np.array(last100mean)]))
