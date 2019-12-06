@@ -157,7 +157,13 @@ if __name__ == "__main__":
     parser.add_argument('-f', default=1, type=int)
     parser.add_argument('-lr', default=0.005, type=float)
     parser.add_argument('-b', default=1000, type=int)
+    parser.add_argument('--file', type=str, required=True)
     args = parser.parse_args()
+    for a in list(args):
+        print(a)
+
+    exit()
+
 
     #For CartPole-v0, maximum episode length is 200
     env = gym.make('CartPole-v0') #Generate Cartpole-v0 environment object from the gym library
@@ -235,4 +241,4 @@ if __name__ == "__main__":
                         agent.plot_data(episodes,scores,max_q_mean[:e+1])
                         sys.exit()
     agent.plot_data(episodes,scores,max_q_mean)
-    np.save(f'layers{layers}',np.array([max_q_mean, np.array(scores)]))
+    np.save(f'{args.file}',np.array([max_q_mean, np.array(scores)]))
