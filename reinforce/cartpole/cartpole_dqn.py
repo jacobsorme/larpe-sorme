@@ -9,7 +9,7 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.models import Sequential
 
-EPISODES = 1000 #Maximum number of episodes
+EPISODES = 500 #Maximum number of episodes
 
 #DQN Agent for the Cartpole
 #Q function approximation with NN, experience replay, and target network
@@ -93,14 +93,14 @@ class DQNAgent:
         #Preallocate network and target network input matrices.
         update_input = np.zeros((batch_size, self.state_size)) #batch_size by state_size two-dimensional array (not matrix!)
         update_target = np.zeros((batch_size, self.state_size)) #Same as above, but used for the target network
-        action, reward, done = [], [], [] #Empty arrays that will grow dynamically
+        action, reward, done = np.zeros(self.batch_size,dtype=int), np.zeros(self.batch_size,dtype=int), np.zeros(self.batch_size,dtype=int) #Empty arrays that will grow dynamically
 
         for i in range(self.batch_size):
             update_input[i] = mini_batch[i][0] #Allocate s(i) to the network input array from iteration i in the batch
-            action.append(mini_batch[i][1]) #Store a(i)
-            reward.append(mini_batch[i][2]) #Store r(i)
+            action[i] = mini_batch[i][1] #Store a(i)
+            reward[i] = mini_batch[i][2] #Store r(i)
             update_target[i] = mini_batch[i][3] #Allocate s'(i) for the target network array from iteration i in the batch
-            done.append(mini_batch[i][4])  #Store done(i)
+            done[i] = mini_batch[i][4]  #Store done(i)
 
         target = self.model.predict(update_input) #Generate target values for training the inner loop network using the network model
         target_val = self.target_model.predict(update_target) #Generate the target values for training the outer loop target network
@@ -147,11 +147,11 @@ class DQNAgent:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--layers',default=2, type=int)
-    parser.add_argument('--units', default=32, type=int)
-    parser.add_argument('--lamb', default=0.985, type=float) # !!! CHANGED
-    parser.add_argument('--freq', default=1, type=int)
-    parser.add_argument('--learn', default=0.005, type=float)
+    parser.add_argument('--layers',default=3, type=int)
+    parser.add_argument('--units', default=16, type=int)
+    parser.add_argument('--lamb', default=0.985, type=float) # !!! NEW
+    parser.add_argument('--freq', default=1, type=int) # !!! NEW
+    parser.add_argument('--learn', default=0.001, type=float)
     parser.add_argument('--buffer', default=1000, type=int)
     parser.add_argument('--file', type=str, required=True)
     args = vars(parser.parse_args())

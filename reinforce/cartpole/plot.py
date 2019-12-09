@@ -36,6 +36,7 @@ if __name__ == "__main__":
     i = 0
     for f in files:
         dat = np.load("dat/"+f)
+        print(f,max(dat[args.result,:].T))
         surf[i,:] = dat[args.result,:].T
         x[i] = findNumber(f) # The value of the parameter
         i += 1
