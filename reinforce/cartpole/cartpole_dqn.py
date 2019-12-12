@@ -139,7 +139,7 @@ class DQNAgent:
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
         #pylab.savefig("scores.png")
-        #pylab.show()
+        pylab.show()
 
 ###############################################################################
 ###############################################################################
@@ -147,18 +147,17 @@ class DQNAgent:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--layers',default=3, type=int)
-    parser.add_argument('--units', default=16, type=int)
+    parser.add_argument('--layers',default=2, type=int)
+    parser.add_argument('--units', default=32, type=int)
     parser.add_argument('--lamb', default=0.985, type=float) # !!! NEW
     parser.add_argument('--freq', default=1, type=int) # !!! NEW
-    parser.add_argument('--learn', default=0.001, type=float)
-    parser.add_argument('--buffer', default=1000, type=int)
+    parser.add_argument('--learn', default=0.0007, type=float)
+    parser.add_argument('--buffer', default=8000, type=int)
     parser.add_argument('--file', type=str, required=True)
     args = vars(parser.parse_args())
     arg = args['file'] # The argument we want to use for file name ...
     result_filename = 'dat/{}_{}'.format(arg,args[arg])
     del args['file'] # Remve the file argument, not needed no more
-    print("aadsas")
     #For CartPole-v0, maximum episode length is 200
     env = gym.make('CartPole-v0') #Generate Cartpole-v0 environment object from the gym library
     #Get state and action sizes from the environment
@@ -233,5 +232,5 @@ if __name__ == "__main__":
                         print("solved after", e-100, "episodes")
                         agent.plot_data(episodes,scores,max_q_mean[:e+1])
                         sys.exit()
-    #agent.plot_data(episodes,scores,max_q_mean)
-    np.save(result_filename,np.array([max_q_mean, np.array(scores), np.array(last100mean)]))
+    agent.plot_data(episodes,scores,max_q_mean)
+    #np.save(result_filename,np.array([max_q_mean, np.array(scores), np.array(last100mean)]))

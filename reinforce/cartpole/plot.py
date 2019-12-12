@@ -23,19 +23,19 @@ if __name__ == "__main__":
     result = "score" if args.result==1 else "last100mean"
     result = "max_q_mean" if args.result==0 else result
 
-
-    files = os.listdir("dat")
+    folder = "dat/"
+    files = os.listdir(folder)
     files = list(filter(lambda f: args.param in f, files))
     files = sorted(files, key=lambda f1: findNumber(f1))
     print(files)
 
 
-    size = np.load("dat/"+files[0])[0].shape[0]
+    size = np.load(folder+files[0])[0].shape[0]
     surf = np.zeros((len(files),size))
     x = np.zeros(len(files))
     i = 0
     for f in files:
-        dat = np.load("dat/"+f)
+        dat = np.load(folder+f)
         print(f,max(dat[args.result,:].T))
         surf[i,:] = dat[args.result,:].T
         x[i] = findNumber(f) # The value of the parameter
